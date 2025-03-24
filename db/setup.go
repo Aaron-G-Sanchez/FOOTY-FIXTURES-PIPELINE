@@ -54,7 +54,7 @@ func insertTeams(teams []types.Team, db *sql.DB) error {
 		valueArgs = append(valueArgs, team.CountryId)
 	}
 
-	query := fmt.Sprintf("INSERT INTO team (id, name, short_code, img_path, country_id) VALUES %s", strings.Join(valueStrings, ","))
+	query := fmt.Sprintf("INSERT INTO teams (id, name, short_code, img_path, country_id) VALUES %s", strings.Join(valueStrings, ","))
 
 	_, err := db.Exec(query, valueArgs...)
 	if err != nil {
