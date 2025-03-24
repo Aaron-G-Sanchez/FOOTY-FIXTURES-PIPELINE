@@ -12,7 +12,7 @@ import (
 
 func PopulateDB(database *sql.DB) error {
 	// Fetch all teams from the Sportmonk database.
-	teamsResponse := utility.FetchTeamData()
+	getTeamsResponse := utility.GetTeams()
 
 	if err := database.Ping(); err != nil {
 		log.Fatal("DB not responding.")
@@ -24,7 +24,7 @@ func PopulateDB(database *sql.DB) error {
 	}
 
 	// Insert teams into the database.
-	err = insertTeams(teamsResponse.Data, database)
+	err = insertTeams(getTeamsResponse.Data, database)
 	if err != nil {
 		_ = trx.Rollback()
 		return err

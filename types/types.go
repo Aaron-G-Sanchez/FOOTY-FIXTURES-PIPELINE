@@ -1,6 +1,6 @@
 package types
 
-type TeamResponse struct {
+type GetTeamsResponse struct {
 	Data []Team `json:"data"`
 }
 

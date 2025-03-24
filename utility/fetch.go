@@ -15,7 +15,7 @@ var urls = map[string]string{
 	"teamsBySeasonId": "https://api.sportmonks.com/v3/football/teams/seasons/24962?api_token=%v",
 }
 
-func FetchTeamData() types.TeamResponse {
+func GetTeams() types.GetTeamsResponse {
 	client := &http.Client{}
 
 	endpoint := fmt.Sprintf(urls["teamsBySeasonId"], config.AppConfig.APIToken)
@@ -35,11 +35,11 @@ func FetchTeamData() types.TeamResponse {
 		log.Fatal("Error reading body: ", err)
 	}
 
-	var teamRes types.TeamResponse
-	err = json.Unmarshal(body, &teamRes)
+	var teamsRes types.GetTeamsResponse
+	err = json.Unmarshal(body, &teamsRes)
 	if err != nil {
 		log.Fatal("Error unmashalling response: ", err)
 	}
 
-	return teamRes
+	return teamsRes
 }
