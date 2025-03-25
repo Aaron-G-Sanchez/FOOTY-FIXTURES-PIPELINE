@@ -3,20 +3,16 @@ package db
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"strings"
 
+	"github.com/aaron-g-sanchez/PROJECTS/FOOTY-FIXTURES-PIPELINE/api"
 	"github.com/aaron-g-sanchez/PROJECTS/FOOTY-FIXTURES-PIPELINE/types"
-	"github.com/aaron-g-sanchez/PROJECTS/FOOTY-FIXTURES-PIPELINE/utility"
 )
 
 func PopulateDB(database *sql.DB) error {
 	// Fetch all teams from the Sportmonk database.
-	getTeamsResponse := utility.GetTeams()
-
-	if err := database.Ping(); err != nil {
-		log.Fatal("DB not responding.")
-	}
+	getTeamsResponse := api.GetTeams()
+	_ = api.GetSchedules()
 
 	trx, err := database.Begin()
 	if err != nil {

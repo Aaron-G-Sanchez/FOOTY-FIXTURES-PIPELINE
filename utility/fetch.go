@@ -1,14 +1,12 @@
 package utility
 
 import (
-	"encoding/json"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
 
 	"github.com/aaron-g-sanchez/PROJECTS/FOOTY-FIXTURES-PIPELINE/config"
-	"github.com/aaron-g-sanchez/PROJECTS/FOOTY-FIXTURES-PIPELINE/types"
 )
 
 var urls = map[string]string{
@@ -16,62 +14,26 @@ var urls = map[string]string{
 	"scheduleBySeasonId": "https://api.sportmonks.com/v3/football/schedules/seasons/24962?api_token=%v",
 }
 
-// TODO: Refactor functions to be one fetch method with entity specific params.
-
-func GetTeams() types.GetTeamsResponse {
+func FetchContent(endpoint, entity string) ([]byte, error) {
 	client := &http.Client{}
 
-	endpoint := fmt.Sprintf(urls["teamsBySeasonId"], config.AppConfig.APIToken)
-	req, err := http.NewRequest("GET", endpoint, nil)
+	endpointWithToken := fmt.Sprintf(endpoint, config.AppConfig.APIToken)
+
+	request, err := http.NewRequest("GET", endpointWithToken, nil)
 	if err != nil {
-		log.Fatal("err: ", err)
+		log.Fatal("Error: ", err)
 	}
 
-	res, err := client.Do(req)
+	response, err := client.Do(request)
 	if err != nil {
-		log.Fatal("Error fetching teams: ", err)
+		log.Fatalf("Error fetching %s: %v", entity, err)
 	}
-	defer res.Body.Close()
+	defer response.Body.Close()
 
-	body, err := io.ReadAll(res.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
-		log.Fatal("Error reading body: ", err)
-	}
-
-	var teamsRes types.GetTeamsResponse
-	err = json.Unmarshal(body, &teamsRes)
-	if err != nil {
-		log.Fatal("Error unmashalling response: ", err)
+		return nil, err
 	}
 
-	return teamsRes
-}
-
-func GetSchedule() types.GetScheduleResponse {
-	client := http.Client{}
-
-	endpoint := fmt.Sprintf(urls["scheduleBySeasonId"], config.AppConfig.APIToken)
-	req, err := http.NewRequest("GET", endpoint, nil)
-	if err != nil {
-		log.Fatal("err: ", err)
-	}
-
-	res, err := client.Do(req)
-	if err != nil {
-		log.Fatal("Error fetching teams: ", err)
-	}
-	defer res.Body.Close()
-
-	body, err := io.ReadAll(res.Body)
-	if err != nil {
-		log.Fatal("Error reading body: ", err)
-	}
-
-	var scheduleRes types.GetScheduleResponse
-	err = json.Unmarshal(body, &scheduleRes)
-	if err != nil {
-		log.Fatal("err unmarshalling response: ", err)
-	}
-
-	return scheduleRes
+	return body, nil
 }
