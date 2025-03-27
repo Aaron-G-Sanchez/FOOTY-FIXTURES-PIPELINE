@@ -9,11 +9,7 @@ import (
 	"github.com/aaron-g-sanchez/PROJECTS/FOOTY-FIXTURES-PIPELINE/config"
 )
 
-var urls = map[string]string{
-	"teamsBySeasonId":    "https://api.sportmonks.com/v3/football/teams/seasons/24962?api_token=%v",
-	"scheduleBySeasonId": "https://api.sportmonks.com/v3/football/schedules/seasons/24962?api_token=%v",
-}
-
+// Fetch data for the given entity from the Sportmonk's API.
 func FetchContent(endpoint, entity string) ([]byte, error) {
 	client := &http.Client{}
 

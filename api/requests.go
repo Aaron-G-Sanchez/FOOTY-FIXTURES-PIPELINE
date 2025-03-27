@@ -15,6 +15,7 @@ var urls = map[string]string{
 	"scheduleBySeasonId": "https://api.sportmonks.com/v3/football/schedules/seasons/24962?api_token=%v",
 }
 
+// Get all teams participating in the 24962 season.
 func GetTeams() types.GetTeamsResponse {
 	var teamsResponse types.GetTeamsResponse
 	responseBody, err := utility.FetchContent(urls["teamsBySeasonId"], "teams")
@@ -30,6 +31,7 @@ func GetTeams() types.GetTeamsResponse {
 	return teamsResponse
 }
 
+// Get all fixtures/matches for the 24962 season.
 func GetSchedules() types.GetScheduleResponse {
 	var schedulesResponse types.GetScheduleResponse
 	responseBody, err := utility.FetchContent(urls["scheduleBySeasonId"], "schedules")
@@ -42,7 +44,7 @@ func GetSchedules() types.GetScheduleResponse {
 		log.Fatal("Error unmarshalling schedule data: ", err)
 	}
 
-	data := schedulesResponse.Data
-	fmt.Println(data)
+	fmt.Printf("%+v\n", schedulesResponse)
+
 	return schedulesResponse
 }

@@ -10,8 +10,9 @@ import (
 )
 
 func PopulateDB(database *sql.DB) error {
-	// Fetch all teams from the Sportmonk database.
+	// Fetch all teams from the Sportmonk API.
 	getTeamsResponse := api.GetTeams()
+	// Fetch seasonal schedule from the Sportmonk API.
 	_ = api.GetSchedules()
 
 	trx, err := database.Begin()
