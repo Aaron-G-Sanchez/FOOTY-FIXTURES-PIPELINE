@@ -2,14 +2,13 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 
 	"github.com/aaron-g-sanchez/PROJECTS/FOOTY-FIXTURES-PIPELINE/types"
 	"github.com/aaron-g-sanchez/PROJECTS/FOOTY-FIXTURES-PIPELINE/utility"
 )
 
-// TODO: Convert into ENUMs.
+// TODO: Move to a JSON config file within the config directory.
 var urls = map[string]string{
 	"teamsBySeasonId":    "https://api.sportmonks.com/v3/football/teams/seasons/24962?api_token=%v",
 	"scheduleBySeasonId": "https://api.sportmonks.com/v3/football/schedules/seasons/24962?api_token=%v",
@@ -43,8 +42,6 @@ func GetSchedules() types.GetScheduleResponse {
 	if err != nil {
 		log.Fatal("Error unmarshalling schedule data: ", err)
 	}
-
-	fmt.Printf("%+v\n", schedulesResponse)
 
 	return schedulesResponse
 }

@@ -14,6 +14,7 @@ func init() {
 func main() {
 	database := db.Connect(config.DatabaseConfig.StagingURI)
 
+	// TODO: place behind command flag.
 	err := db.PopulateDB(database)
 	if err != nil {
 		log.Fatal("Error populating database: ", err)
