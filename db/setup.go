@@ -9,6 +9,9 @@ import (
 	"github.com/aaron-g-sanchez/PROJECTS/FOOTY-FIXTURES-PIPELINE/types"
 )
 
+// Map to hold all matches along with their participant(teams) ids.
+var matchParticipants = map[int][2]int{}
+
 // Populate the database when a new db is created.
 func PopulateDB(database *sql.DB) error {
 	getTeamsResponse := api.GetTeams()
@@ -19,6 +22,7 @@ func PopulateDB(database *sql.DB) error {
 		return err
 	}
 
+	// TODO: Look into using concurrency for completing population.
 	// TODO: Look into logging the error if data is not inserted rather than
 	// returning the error.
 	err = insertTeams(getTeamsResponse.Data, database)
@@ -33,6 +37,11 @@ func PopulateDB(database *sql.DB) error {
 	}
 	fmt.Println("DB populated: schedule")
 
+	// TODO: Insert match participants.
+	err = insertMatchParticipants(database)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -47,7 +56,10 @@ func insertTeams(teams []types.Team, db *sql.DB) error {
 	valueArgs := make([]any, 0, len(teams)*5)
 
 	for i, team := range teams {
-		valueStrings = append(valueStrings, fmt.Sprintf("($%d, $%d, $%d, $%d, $%d)", i*5+1, i*5+2, i*5+3, i*5+4, i*5+5))
+		valueStrings = append(valueStrings, fmt.Sprintf(
+			"($%d, $%d, $%d, $%d, $%d)",
+			i*5+1, i*5+2, i*5+3, i*5+4, i*5+5,
+		))
 		valueArgs = append(valueArgs, team.Id)
 		valueArgs = append(valueArgs, team.Name)
 		valueArgs = append(valueArgs, team.ShortCode)
@@ -76,8 +88,6 @@ func insertTeams(teams []types.Team, db *sql.DB) error {
 }
 
 func insertMatches(matches []types.Match, db *sql.DB) error {
-	// TODO: Insert matches into the matches table.
-
 	// Begin DB insertion.
 	trx, err := db.Begin()
 	if err != nil {
@@ -98,6 +108,16 @@ func insertMatches(matches []types.Match, db *sql.DB) error {
 		valueArgs = append(valueArgs, match.Name)
 		valueArgs = append(valueArgs, match.StartingAt)
 		valueArgs = append(valueArgs, match.ResultInfo)
+
+		// Adds each match and their participants to matchParticipants for later
+		// insertion.
+		if _, ok := matchParticipants[match.Id]; !ok {
+			var participants [2]int
+			participants[0] = match.Participants[0].Id
+			participants[1] = match.Participants[1].Id
+
+			matchParticipants[match.Id] = participants
+		}
 	}
 
 	query := fmt.Sprintf(
@@ -106,6 +126,54 @@ func insertMatches(matches []types.Match, db *sql.DB) error {
 	)
 
 	// Exectute the query(INSERT)
+	_, err = db.Exec(query, valueArgs...)
+	if err != nil {
+		_ = trx.Rollback()
+		return err
+	}
+
+	if err := trx.Commit(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// TODO: Add functionality to assign teams to a match.
+func insertMatchParticipants(db *sql.DB) error {
+	// Begin transaction.
+	trx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	matchParticipantsLength := len(matchParticipants) * 2
+	valueStrings := make([]string, 0, matchParticipantsLength)
+	valueArgs := make([]any, 0, matchParticipantsLength*2)
+
+	var i int
+	for matchId, participantArr := range matchParticipants {
+		valueStrings = append(valueStrings, fmt.Sprintf(
+			"($%d, $%d)",
+			i*2+1, i*2+2,
+		))
+		valueArgs = append(valueArgs, matchId)
+		valueArgs = append(valueArgs, participantArr[0])
+		i++
+		valueStrings = append(valueStrings, fmt.Sprintf(
+			"($%d, $%d)",
+			i*2+1, i*2+2,
+		))
+		valueArgs = append(valueArgs, matchId)
+		valueArgs = append(valueArgs, participantArr[1])
+	}
+
+	query := fmt.Sprintf(
+		"INSERT INTO teams_matches (match_id, team_id) VALUES %s",
+		strings.Join(valueStrings, ","),
+	)
+
+	// Execute the query(INSERT)
 	_, err = db.Exec(query, valueArgs...)
 	if err != nil {
 		_ = trx.Rollback()
