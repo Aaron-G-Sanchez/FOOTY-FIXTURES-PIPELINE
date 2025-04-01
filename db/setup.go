@@ -9,24 +9,25 @@ import (
 	"github.com/aaron-g-sanchez/PROJECTS/FOOTY-FIXTURES-PIPELINE/types"
 )
 
+// Populate the database when a new db is created.
 func PopulateDB(database *sql.DB) error {
-	// Fetch all teams from the Sportmonk API.
 	getTeamsResponse := api.GetTeams()
-	// Fetch seasonal schedule from the Sportmonk API.
-	matches, err := api.ProcessScheduleResponse()
+	getScheduleResponse := api.GetSchedules()
+
+	matches, err := api.ProcessScheduleResponse(getScheduleResponse)
 	if err != nil {
 		return err
 	}
 
-	// Insert teams into the database.
+	// TODO: Look into logging the error if data is not inserted rather than
+	// returning the error.
 	err = insertTeams(getTeamsResponse.Data, database)
 	if err != nil {
 		return err
 	}
 	fmt.Println("DB populated: teams")
 
-	// Insert schedule into the databse.
-	err = insertSchedule(matches)
+	err = insertMatches(matches, database)
 	if err != nil {
 		return err
 	}
@@ -74,9 +75,45 @@ func insertTeams(teams []types.Team, db *sql.DB) error {
 	return nil
 }
 
-func insertSchedule(matches []types.Match) error {
-	for _, match := range matches {
-		fmt.Println("Match:", match.Id)
+func insertMatches(matches []types.Match, db *sql.DB) error {
+	// TODO: Insert matches into the matches table.
+
+	// Begin DB insertion.
+	trx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+
+	valueStrings := make([]string, 0, len(matches))
+	valueArgs := make([]any, 0, len(matches)*6)
+
+	for i, match := range matches {
+		valueStrings = append(valueStrings, fmt.Sprintf(
+			"($%d, $%d, $%d, $%d, $%d, $%d)",
+			i*6+1, i*6+2, i*6+3, i*6+4, i*6+5, i*6+6,
+		))
+		valueArgs = append(valueArgs, match.Id)
+		valueArgs = append(valueArgs, match.LeagueId)
+		valueArgs = append(valueArgs, match.SeasonId)
+		valueArgs = append(valueArgs, match.Name)
+		valueArgs = append(valueArgs, match.StartingAt)
+		valueArgs = append(valueArgs, match.ResultInfo)
+	}
+
+	query := fmt.Sprintf(
+		"INSERT INTO matches (id, league_id, season_id, name, starting_at, result_info) VALUES %s",
+		strings.Join(valueStrings, ","),
+	)
+
+	// Exectute the query(INSERT)
+	_, err = db.Exec(query, valueArgs...)
+	if err != nil {
+		_ = trx.Rollback()
+		return err
+	}
+
+	if err := trx.Commit(); err != nil {
+		return err
 	}
 
 	return nil

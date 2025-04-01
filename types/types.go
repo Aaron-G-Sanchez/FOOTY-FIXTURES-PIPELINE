@@ -12,7 +12,6 @@ type Team struct {
 	CountryId int    `json:"country_id"`
 }
 
-// TODO: Add type definition for GetScheduleResponse.
 type GetScheduleResponse struct {
 	Data []Stage `json:"data"`
 }
@@ -29,6 +28,7 @@ type Stage struct {
 	Fixtures   []Match `json:"fixtures"`
 }
 
+// Match type is synonymous with Fixtures.
 type Match struct {
 	Id           int     `json:"id"`
 	LeagueId     int     `json:"league_id"`

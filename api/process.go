@@ -8,10 +8,8 @@ import (
 	"github.com/aaron-g-sanchez/PROJECTS/FOOTY-FIXTURES-PIPELINE/types"
 )
 
-// Call GetSchedules and process the data to return only a list of matches.
-func ProcessScheduleResponse() ([]types.Match, error) {
-	schdeduleResponse := GetSchedules()
-
+// Parse the types.GetScheduleResponse and return only the fixtures.
+func ProcessScheduleResponse(schdeduleResponse types.GetScheduleResponse) ([]types.Match, error) {
 	if len(schdeduleResponse.Data) < 1 {
 		return nil, errors.New("No stage for the given season.")
 	}
