@@ -42,6 +42,8 @@ func PopulateDB(database *sql.DB) error {
 	if err != nil {
 		return err
 	}
+	fmt.Println("DB Populated: participants")
+
 	return nil
 }
 
@@ -139,7 +141,6 @@ func insertMatches(matches []types.Match, db *sql.DB) error {
 	return nil
 }
 
-// TODO: Add functionality to assign teams to a match.
 func insertMatchParticipants(db *sql.DB) error {
 	// Begin transaction.
 	trx, err := db.Begin()
@@ -147,37 +148,15 @@ func insertMatchParticipants(db *sql.DB) error {
 		return err
 	}
 
-	matchParticipantsLength := len(matchParticipants) * 2
-	valueStrings := make([]string, 0, matchParticipantsLength)
-	valueArgs := make([]any, 0, matchParticipantsLength*2)
-
-	var i int
 	for matchId, participantArr := range matchParticipants {
-		valueStrings = append(valueStrings, fmt.Sprintf(
-			"($%d, $%d)",
-			i*2+1, i*2+2,
-		))
-		valueArgs = append(valueArgs, matchId)
-		valueArgs = append(valueArgs, participantArr[0])
-		i++
-		valueStrings = append(valueStrings, fmt.Sprintf(
-			"($%d, $%d)",
-			i*2+1, i*2+2,
-		))
-		valueArgs = append(valueArgs, matchId)
-		valueArgs = append(valueArgs, participantArr[1])
-	}
+		query := "INSERT INTO teams_matches (match_id, team_id) VALUES ($1, $2), ($1, $3)"
 
-	query := fmt.Sprintf(
-		"INSERT INTO teams_matches (match_id, team_id) VALUES %s",
-		strings.Join(valueStrings, ","),
-	)
-
-	// Execute the query(INSERT)
-	_, err = db.Exec(query, valueArgs...)
-	if err != nil {
-		_ = trx.Rollback()
-		return err
+		// Exectue query(INSERT)
+		_, err := db.Exec(query, matchId, participantArr[0], participantArr[1])
+		if err != nil {
+			_ = trx.Rollback()
+			return err
+		}
 	}
 
 	if err := trx.Commit(); err != nil {
