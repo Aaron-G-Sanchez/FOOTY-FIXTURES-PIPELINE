@@ -5,16 +5,13 @@ import (
 	"io"
 	"log"
 	"net/http"
-
-	"github.com/aaron-g-sanchez/PROJECTS/FOOTY-FIXTURES-PIPELINE/config"
 )
 
 // Fetch data for the given entity from the Sportmonk's API.
-func FetchContent(endpoint, entity string) ([]byte, error) {
+func FetchContent(endpoint, entity, token string) ([]byte, error) {
 	client := &http.Client{}
 
-	endpointWithToken := fmt.Sprintf(endpoint, config.AppConfig.APIToken)
-
+	endpointWithToken := fmt.Sprintf(endpoint, token)
 	request, err := http.NewRequest("GET", endpointWithToken, nil)
 	if err != nil {
 		log.Fatal("Error: ", err)

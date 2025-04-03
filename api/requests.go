@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 
+	"github.com/aaron-g-sanchez/PROJECTS/FOOTY-FIXTURES-PIPELINE/config"
 	"github.com/aaron-g-sanchez/PROJECTS/FOOTY-FIXTURES-PIPELINE/types"
 	"github.com/aaron-g-sanchez/PROJECTS/FOOTY-FIXTURES-PIPELINE/utility"
 )
@@ -17,7 +18,7 @@ var urls = map[string]string{
 // Get all teams participating in the 24962 season.
 func GetTeams() types.GetTeamsResponse {
 	var teamsResponse types.GetTeamsResponse
-	responseBody, err := utility.FetchContent(urls["teamsBySeasonId"], "teams")
+	responseBody, err := utility.FetchContent(urls["teamsBySeasonId"], "teams", config.AppConfig.APIToken)
 	if err != nil {
 		log.Fatal("Error reading response body: ", err)
 	}
@@ -33,7 +34,7 @@ func GetTeams() types.GetTeamsResponse {
 // Get all fixtures/matches for the 24962 season.
 func GetSchedules() types.GetScheduleResponse {
 	var schedulesResponse types.GetScheduleResponse
-	responseBody, err := utility.FetchContent(urls["scheduleBySeasonId"], "schedules")
+	responseBody, err := utility.FetchContent(urls["scheduleBySeasonId"], "schedules", config.AppConfig.APIToken)
 	if err != nil {
 		log.Fatal("Error reading response body: ", err)
 	}
