@@ -1,6 +1,7 @@
 package utility
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -22,6 +23,10 @@ func FetchContent(endpoint, entity, token string) ([]byte, error) {
 		log.Fatalf("Error fetching %s: %v", entity, err)
 	}
 	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		return nil, errors.New("Server returned non-OK status code")
+	}
 
 	body, err := io.ReadAll(response.Body)
 	if err != nil {

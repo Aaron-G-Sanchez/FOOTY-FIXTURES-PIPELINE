@@ -29,13 +29,14 @@ func TestFetchContent(t *testing.T) {
 	}
 
 	// TODO: Create test helper function to marshal the test data.
-	expectedBody, err := json.Marshal(testTeamsResponse)
+	expectedTeamsEndpointBody, err := marshalTestData(testTeamsResponse)
 	if err != nil {
 		t.Fatalf("Failed to marshal the testTeamsResponse: %v", err)
 	}
 
 	// TODO: Create extpected body for tesing the schedules entity.
-
+	// TODO: Add test cases to check functionality when fetching the schedule
+	// entity.
 	testCases := []struct {
 		name         string
 		endpoint     string
@@ -44,7 +45,7 @@ func TestFetchContent(t *testing.T) {
 		{
 			name:         "Should return a list of teams",
 			endpoint:     "/teams?api_token=%v",
-			expectedBody: expectedBody,
+			expectedBody: expectedTeamsEndpointBody,
 		},
 	}
 
@@ -54,7 +55,7 @@ func TestFetchContent(t *testing.T) {
 		case "/teams":
 			token := r.URL.Query().Get("api_token")
 			if token == "token" {
-				w.Write(expectedBody)
+				w.Write(expectedTeamsEndpointBody)
 			} else {
 				w.WriteHeader(http.StatusUnauthorized)
 			}
@@ -77,4 +78,10 @@ func TestFetchContent(t *testing.T) {
 			}
 		})
 	}
+}
+
+// Helper function to marshal test data.
+func marshalTestData(data any) ([]byte, error) {
+	response, err := json.Marshal(data)
+	return response, err
 }
